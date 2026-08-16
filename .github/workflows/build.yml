@@ -33,8 +33,13 @@ jobs:
     - name: Build APK
       run: flutter build apk --release
 
+    - name: List build output
+      run: find build/app/outputs -type f
+      if: always()
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: voice-nav-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: build/app/outputs/flutter-apk/*.apk
+        if-no-files-found: error
