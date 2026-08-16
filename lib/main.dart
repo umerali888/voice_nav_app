@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'assets/avatar.json',
                 animate: _isListening, // جب مائیک آن ہوگا تو روبوٹ ہلے گا
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.robotics, size: 100, color: Colors.deepPurple);
+                  return const Icon(Icons.smart_toy, size: 100, color: Colors.deepPurple);
                 },
               ),
             ),
