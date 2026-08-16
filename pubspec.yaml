@@ -13,6 +13,9 @@ dependencies:
   latlong2: ^0.9.0
   speech_to_text: ^7.0.0
   http: ^1.2.1
+  lottie: ^3.5.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/avatar.json
