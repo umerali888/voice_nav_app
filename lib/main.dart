@@ -125,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _processCommand(String command) async {
     if (command.trim().isEmpty) return;
-    String lower = command.toLowerCase();
+    String lower = command.toLowerCase().trim();
 
     final foodWords = ['restaurant', 'food', 'khana', 'کھانا', 'ریسٹورنٹ'];
     final hotelWords = ['hotel', 'hostel', 'ہوٹل', 'ہاسٹل'];
@@ -134,22 +134,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (foodWords.any((w) => lower.contains(w))) {
       await _searchNearby('amenity', 'restaurant', 'restaurants');
+      return;
     } else if (hotelWords.any((w) => lower.contains(w))) {
       await _searchNearby('tourism', 'hotel', 'hotels');
+      return;
     } else if (mallWords.any((w) => lower.contains(w))) {
       await _searchNearby('shop', 'mall', 'shopping malls');
+      return;
     } else if (bankWords.any((w) => lower.contains(w))) {
       await _searchNearby('amenity', 'bank', 'banks');
-    } else {
-      String destination = command;
-      final goWords = ['go to ', 'take me to ', 'navigate to '];
-      for (var w in goWords) {
-        if (lower.contains(w)) {
-          destination = command.split(RegExp(w, caseSensitive: false)).last.trim();
-          break;
-        }
+      return;
+    }
+
+    String remainder = command.trim();
+    final prefixes = [
+      'take me to ',
+      'navigate to ',
+      'route to ',
+      'directions to ',
+      'go to ',
+      'i want to go to ',
+    ];
+    String lowerRemainder = remainder.toLowerCase();
+    for (var p in prefixes) {
+      if (lowerRemainder.startsWith(p)) {
+        remainder = remainder.substring(p.length).trim();
+        break;
       }
-      await _searchAndRoute(destination);
+    }
+
+    final toSplit = RegExp(r'^(.*?)\s+to\s+(.+)$', caseSensitive: false);
+    final match = toSplit.firstMatch(remainder);
+
+    if (match != null && match.group(1)!.trim().isNotEmpty) {
+      String originName = match.group(1)!.trim();
+      String destName = match.group(2)!.trim();
+      await _searchAndRouteFromTo(originName, destName);
+    } else {
+      await _searchAndRoute(remainder);
     }
   }
 
@@ -180,6 +202,20 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
     await _getRoute(_currentLocation, dest, destination);
+    setState(() => _isBusy = false);
+  }
+
+  Future<void> _searchAndRouteFromTo(String originName, String destName) async {
+    setState(() => _isBusy = true);
+    await _speak('Searching route from $originName to $destName');
+    final origin = await _geocode(originName);
+    final dest = await _geocode(destName);
+    if (origin == null || dest == null) {
+      await _speak('Sorry, I could not find one of the locations');
+      setState(() => _isBusy = false);
+      return;
+    }
+    await _getRoute(origin, dest, destName);
     setState(() => _isBusy = false);
   }
 
@@ -277,7 +313,7 @@ out body 15;
 
   Future<void> _onSearchSubmitted(String value) async {
     if (value.trim().isEmpty) return;
-    await _searchAndRoute(value.trim());
+    await _processCommand(value.trim());
   }
 
   @override
@@ -293,7 +329,7 @@ out body 15;
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
                 subdomains: const ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.example.voice_nav_app',
               ),
@@ -317,10 +353,15 @@ out body 15;
                       borderRadius: BorderRadius.circular(30),
                       child: TextField(
                         controller: _searchController,
+                        textInputAction: TextInputAction.search,
                         onSubmitted: _onSearchSubmitted,
                         decoration: InputDecoration(
-                          hintText: 'Search places or destination',
+                          hintText: 'Search: "Chishtian to Lahore" or "restaurant"',
                           prefixIcon: const Icon(Icons.search),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () => _onSearchSubmitted(_searchController.text),
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                             borderSide: BorderSide.none,
