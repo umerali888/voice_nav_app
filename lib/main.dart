@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
   String _text = 'Press button & speak destination';
+String _selectedLocale = 'en_US';
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (available) {
         setState(() => _isListening = true);
         _speech.listen(
+          localeId: _selectedLocale,
           onResult: (val) => setState(() {
             _text = val.recognizedWords;
           }),
@@ -66,9 +68,30 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+       appBar: AppBar(
         title: const Text('Voice Navigation AI'),
         centerTitle: true,
+        actions: [
+          DropdownButton<String>(
+            value: _selectedLocale,
+            dropdownColor: Colors.white,
+            underline: const SizedBox(),
+            items: const [
+              DropdownMenuItem(value: 'en_US', child: Text('English')),
+              DropdownMenuItem(value: 'ur_PK', child: Text('Urdu')),
+              DropdownMenuItem(value: 'ar_SA', child: Text('Arabic')),
+              DropdownMenuItem(value: 'fr_FR', child: Text('Français')),
+              DropdownMenuItem(value: 'es_ES', child: Text('Español')),
+              DropdownMenuItem(value: 'hi_IN', child: Text('Hindi')),
+            ],
+            onChanged: (val) {
+              if (val != null) {
+                setState(() => _selectedLocale = val);
+              }
+            },
+          ),
+          const SizedBox(width: 12),
+        ],
       ),
       body: Stack(
         children: [
