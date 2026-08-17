@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
 void main() {
   runApp(const VoiceNavApp());
@@ -34,14 +35,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late stt.SpeechToText _speech;
+  late FlutterTts _tts;
   bool _isListening = false;
   String _text = 'Press button & speak destination';
-String _selectedLocale = 'en_US';
+  String _selectedLocale = 'en_US';
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
+    _tts = FlutterTts();
+  }
+
+  Future<void> _speak(String text) async {
+    String ttsLang = _selectedLocale.replaceAll('_', '-');
+    await _tts.setLanguage(ttsLang);
+    await _tts.setPitch(1.0);
+    await _tts.speak(text);
   }
 
   void _listen() async {
@@ -56,6 +66,10 @@ String _selectedLocale = 'en_US';
           localeId: _selectedLocale,
           onResult: (val) => setState(() {
             _text = val.recognizedWords;
+            if (val.finalResult) {
+              _isListening = false;
+              _speak(_text);
+            }
           }),
         );
       }
@@ -68,7 +82,7 @@ String _selectedLocale = 'en_US';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Voice Navigation AI'),
         centerTitle: true,
         actions: [
@@ -98,7 +112,7 @@ String _selectedLocale = 'en_US';
           FlutterMap(
             options: const MapOptions(
               initialCenter: LatLng(33.6844, 73.0479),
-              initialZoom: 13,
+              initialZoom: 6,
             ),
             children: [
               TileLayer(
