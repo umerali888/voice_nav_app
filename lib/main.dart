@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 void main() {
@@ -68,33 +70,48 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Voice Navigation AI'),
         centerTitle: true,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Cartoon Avatar Assistant
-            SizedBox(
-              height: 250,
-              width: 250,
-              child: Lottie.asset(
-                'assets/avatar.json',
-                animate: _isListening, // جب مائیک آن ہوگا تو روبوٹ ہلے گا
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.smart_toy, size: 100, color: Colors.deepPurple);
-                },
-              ),
+      body: Stack(
+        children: [
+          FlutterMap(
+            options: const MapOptions(
+              initialCenter: LatLng(33.6844, 73.0479),
+              initialZoom: 13,
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                _text,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center,
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.voice_nav_app',
               ),
+            ],
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 250,
+                  width: 250,
+                  child: Lottie.asset(
+                    'assets/avatar.json',
+                    animate: _isListening,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.smart_toy, size: 100, color: Colors.deepPurple);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    _text,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
