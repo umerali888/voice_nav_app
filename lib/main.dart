@@ -329,7 +329,7 @@ out body 15;
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                urlTemplate: 'https://{s}.tile.jawg.io/jawg-streets/{z}/{x}/{y}.png?access-token=QFNRzV07NaXkJGqiAUXAvAwlMLTwhcNx6u5HK40oHNI3YXShaUH4gRnaCkSl20oH'
                 subdomains: const ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.example.voice_nav_app',
               ),
